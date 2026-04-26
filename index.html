@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#1a1a2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>CCBA Programme</title>
+<link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiQ0NCQSBQcm9ncmFtbWUiLCJzaG9ydF9uYW1lIjoiQ0NCQSIsInN0YXJ0X3VybCI6Ii8iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjMWExYTJlIiwidGhlbWVfY29sb3IiOiIjMWExYTJlIn0=">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#1a1a2e;--card:#16213e;--surface:#1e2a45;--text:#eaeaea;--muted:#8e99a4;--border:rgba(255,255,255,0.08);--accent:#B71C1C;--accent-mid:#E57373;--green:#4CAF50;--amber:#FF9800;--red:#f44336;--blue:#2979FF;--radius:12px}
+[data-theme="light"]{--bg:#f5f5f5;--card:#fff;--surface:#fafafa;--text:#111;--muted:#666;--border:rgba(0,0,0,0.08)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;min-height:100dvh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+input,select,textarea,button{font-family:inherit}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px}
+
+/* ═══ APP SHELL ═══ */
+.app{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}
+.app-header{
+  background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);
+  padding:12px 16px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:2px solid var(--accent);position:sticky;top:0;z-index:100;
+  flex-shrink:0;
+}
+[data-theme="light"] .app-header{background:linear-gradient(135deg,#f8f8ff,#e8eaf6,#f5f5f5);border-bottom-color:var(--accent)}
+.app-header h1{font-family:'Outfit',sans-serif;font-size:16px;font-weight:700;color:#fff}
+[data-theme="light"] .app-header h1{color:#111}
+.app-header h1 span{color:var(--accent-mid)}
+.header-actions{display:flex;gap:6px;align-items:center}
+.icon-btn{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;transition:all 0.2s;color:var(--muted)}
+.icon-btn:hover{background:rgba(255,255,255,0.1);color:#fff}
+.icon-btn.active{background:rgba(41,121,255,0.15);border-color:var(--blue);color:var(--blue)}
+
+/* ═══ BOTTOM NAV ═══ */
+.bottom-nav{
+  display:flex;position:fixed;bottom:0;left:0;right:0;
+  background:var(--card);border-top:1px solid var(--border);
+  padding:6px 0 env(safe-area-inset-bottom,6px);z-index:100;
+}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;cursor:pointer;transition:all 0.2s;color:var(--muted);font-size:9px;font-weight:600;letter-spacing:0.3px}
+.nav-item.active{color:var(--accent-mid)}
+.nav-item .nav-icon{font-size:18px}
+
+/* ═══ MAIN CONTENT ═══ */
+.main{flex:1;padding:12px 12px 80px;overflow-y:auto}
+.screen{display:none}.screen.active{display:block}
+
+/* ═══ LOGIN ═══ */
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:70vh;padding:20px}
+.login-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px 24px;max-width:360px;width:100%;text-align:center}
+.login-card h2{font-family:'Outfit',sans-serif;font-size:20px;font-weight:700;margin-bottom:4px}
+.login-card p{font-size:11px;color:var(--muted);margin-bottom:20px}
+.login-card .logo{font-size:40px;margin-bottom:12px}
+.field{margin-bottom:14px;text-align:left}
+.field label{display:block;font-size:10px;font-weight:600;color:var(--muted);margin-bottom:4px;letter-spacing:0.5px;text-transform:uppercase}
+.field input,.field select,.field textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;outline:none;transition:border-color 0.2s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent-mid)}
+.field textarea{resize:vertical;min-height:60px}
+.btn{width:100%;padding:11px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:'DM Sans',sans-serif}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{opacity:0.9}
+.btn-secondary{background:var(--surface);color:var(--text);border:1px solid var(--border)}.btn-secondary:hover{background:var(--card)}
+.btn-success{background:var(--green);color:#fff}
+.error-msg{color:var(--red);font-size:11px;margin-top:6px}
+
+/* ═══ SITE TABS ═══ */
+.site-tabs{display:flex;gap:4px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+.site-tab{padding:8px 14px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all 0.2s;border:1px solid var(--border);background:var(--surface);color:var(--muted);flex-shrink:0}
+.site-tab.active{color:#fff;border-color:transparent}
+
+/* ═══ DATA ENTRY CARDS ═══ */
+.entry-card{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:12px;border:1px solid var(--border)}
+.entry-card h3{font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px}
+
+.slider-field{margin-bottom:14px}
+.slider-field .sf-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.slider-field .sf-label{font-size:11px;font-weight:600;color:var(--muted)}
+.slider-field .sf-value{font-family:'Outfit',sans-serif;font-size:16px;font-weight:700}
+.slider-field input[type=range]{width:100%;height:6px;border-radius:3px;-webkit-appearance:none;background:var(--surface);outline:none;cursor:pointer}
+.slider-field input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;cursor:pointer}
+
+.rag-selector{display:flex;gap:8px;margin-bottom:14px}
+.rag-option{flex:1;padding:10px 8px;border-radius:8px;text-align:center;cursor:pointer;font-size:10px;font-weight:600;border:2px solid transparent;transition:all 0.2s;background:var(--surface)}
+.rag-option.selected{border-color:currentColor;transform:scale(1.02)}
+.rag-green{color:var(--green)}.rag-amber{color:var(--amber)}.rag-red{color:var(--red)}
+
+.stepper{display:flex;align-items:center;gap:8px}
+.stepper button{width:30px;height:30px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.stepper .stepper-val{font-size:16px;font-weight:700;min-width:24px;text-align:center}
+
+.risk-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.risk-item{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:8px;background:var(--surface);font-size:11px}
+.risk-item .ri-label{font-weight:600}
+
+
+/* ═══ STAGE 2: SPARKLINES & HISTORY ═══ */
+.spark-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.spark-row:last-child{border-bottom:none}
+.spark-info{min-width:80px}
+.spark-name{font-size:11px;font-weight:600}
+.spark-pct{font-family:'Outfit',sans-serif;font-size:18px;font-weight:700}
+.spark-svg{flex:1;height:40px}
+.spark-delta{min-width:50px;text-align:right;font-size:12px;font-weight:700}
+
+.delta-table{width:100%;border-collapse:collapse;font-size:10px;margin-top:8px}
+.delta-table th{text-align:left;padding:6px 8px;font-size:8px;font-weight:700;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;border-bottom:1px solid var(--border)}
+.delta-table td{padding:6px 8px;border-bottom:1px solid var(--border);vertical-align:middle}
+.delta-table tr:last-child td{border-bottom:none}
+.delta-chip{display:inline-block;padding:2px 6px;border-radius:6px;font-size:9px;font-weight:600}
+.delta-chip.pos{background:rgba(76,175,80,0.12);color:var(--green)}
+.delta-chip.neg{background:rgba(244,67,54,0.12);color:var(--red)}
+.delta-chip.zero{background:rgba(255,255,255,0.04);color:var(--muted)}
+.delta-chip.rag-change{background:rgba(255,152,0,0.12);color:var(--amber)}
+.delta-chip.cod-shift{background:rgba(244,67,54,0.12);color:var(--red)}
+
+.wbs-delta-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:6px}
+.wbs-delta-item{text-align:center;padding:6px 4px;border-radius:6px;background:var(--surface);font-size:8px}
+.wbs-delta-item .wd-label{color:var(--muted);margin-bottom:2px}
+.wbs-delta-item .wd-val{font-size:11px;font-weight:700}
+
+.compare-bar{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.compare-label{font-size:10px;color:var(--muted);width:70px;text-align:right;flex-shrink:0}
+.compare-track{flex:1;height:14px;border-radius:4px;background:var(--surface);overflow:hidden;position:relative}
+.compare-fill{height:100%;border-radius:4px;transition:width 0.8s ease;position:absolute;top:0;left:0}
+.compare-fill.prev{opacity:0.3}
+.compare-val{font-size:10px;font-weight:600;width:40px}
+
+.period-selector{display:flex;gap:6px;margin-bottom:12px;align-items:center}
+.period-selector label{font-size:10px;color:var(--muted);font-weight:600}
+.period-selector select{padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:11px}
+
+.history-tabs{display:flex;gap:4px;margin-bottom:12px}
+.history-tab{padding:6px 12px;border-radius:16px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--muted)}
+.history-tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+.deviation-banner{background:rgba(255,152,0,0.1);border:1px solid rgba(255,152,0,0.3);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:11px;color:var(--amber)}
+.deviation-banner strong{display:block;margin-bottom:4px;font-size:12px}
+.deviation-banner .dev-detail{margin-bottom:4px}
+.deviation-note-field{margin-top:8px}
+.deviation-note-field textarea{width:100%;padding:8px;border-radius:6px;border:1px solid rgba(255,152,0,0.3);background:rgba(255,152,0,0.05);color:var(--text);font-size:11px;resize:none;min-height:50px;outline:none;font-family:inherit}
+
+
+/* ═══ SUBMIT BAR ═══ */
+.submit-bar{position:sticky;bottom:64px;background:var(--card);border-top:1px solid var(--border);padding:10px 16px;display:flex;gap:8px;z-index:50;margin:0 -12px;border-radius:12px 12px 0 0}
+
+/* ═══ DASHBOARD (reuses previous styles) ═══ */
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:14px}
+.dash-card{background:var(--card);border-radius:var(--radius);overflow:hidden;border:1px solid var(--border)}
+.dash-card-header{padding:10px 12px;text-align:center}
+.dash-card-header h3{font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;color:#fff}
+.dash-card-body{padding:12px}
+.dash-donut{display:flex;justify-content:center;margin-bottom:8px}
+.dash-donut .donut-container{width:70px;height:70px;position:relative}
+.dash-donut svg{width:100%;height:100%;transform:rotate(-90deg)}
+.dash-donut .donut-bg{fill:none;stroke:rgba(255,255,255,0.08);stroke-width:8}
+.dash-donut .donut-fill{fill:none;stroke-width:8;stroke-linecap:round}
+.dash-donut .donut-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Outfit',sans-serif;font-size:16px;font-weight:700}
+.dash-wbs{margin-bottom:8px}
+.dash-wbs-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0;font-size:9px}
+.dash-wbs-row .w-label{color:var(--muted)}.dash-wbs-row .w-val{font-weight:600}
+.dash-meta{font-size:9px;color:var(--muted);text-align:center;margin-top:6px;line-height:1.6}
+.dash-meta strong{color:var(--text)}
+.dash-rag{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:600;margin-top:4px}
+.dash-rag::before{content:'';width:7px;height:7px;border-radius:50%;display:inline-block}
+.dash-rag.g::before{background:var(--green)}.dash-rag.a::before{background:var(--amber)}.dash-rag.r::before{background:var(--red)}
+.dash-bars{display:flex;gap:6px;justify-content:center;align-items:flex-end;height:36px;margin:8px 0}
+.dash-bar{width:22px;border-radius:3px 3px 0 0;text-align:center}
+.dash-bar-lbl{font-size:7px;color:var(--muted)}
+.dash-bar-val{font-size:7px;font-weight:600}
+
+.dash-bottom{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+@media(max-width:500px){.dash-bottom{grid-template-columns:1fr}}
+.dash-panel{background:var(--card);border-radius:var(--radius);padding:12px;border:1px solid var(--border)}
+.dash-panel h3{font-family:'Outfit',sans-serif;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid var(--accent)}
+.dash-panel-item{display:flex;gap:6px;align-items:flex-start;margin-bottom:4px;font-size:10px;color:var(--muted);line-height:1.4}
+.dash-panel-num{font-family:'Outfit',sans-serif;font-size:8px;font-weight:700;min-width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff}
+
+/* ═══ HISTORY ═══ */
+.history-card{background:var(--card);border-radius:var(--radius);padding:14px;margin-bottom:10px;border:1px solid var(--border)}
+.history-card h3{font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;margin-bottom:8px}
+.history-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:11px}
+.history-row:last-child{border-bottom:none}
+.delta-pos{color:var(--green);font-weight:600}.delta-neg{color:var(--red);font-weight:600}.delta-zero{color:var(--muted)}
+
+/* ═══ STATUS MESSAGES ═══ */
+.toast{position:fixed;top:60px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:8px;font-size:12px;font-weight:600;z-index:200;opacity:0;transition:opacity 0.3s;pointer-events:none}
+.toast.show{opacity:1}
+.toast-success{background:rgba(76,175,80,0.9);color:#fff}
+.toast-error{background:rgba(244,67,54,0.9);color:#fff}
+
+/* ═══ OFFLINE INDICATOR ═══ */
+.offline-banner{display:none;background:var(--amber);color:#000;text-align:center;padding:4px;font-size:10px;font-weight:600}
+.offline-banner.show{display:block}
+</style>
+</head>
+<body data-theme="dark">
+
+<div class="app" id="app">
+  <div class="offline-banner" id="offlineBanner">Offline — data will sync when connected</div>
+
+  <div class="app-header">
+    <h1><span>BECS</span> | CCBA</h1>
+    <div class="header-actions">
+      <div class="icon-btn" onclick="toggleTheme()" title="Theme">🌓</div>
+      <div class="icon-btn" onclick="exportPDF()" title="PDF">📄</div>
+      <div class="icon-btn" onclick="logout()" title="Logout" id="logoutBtn" style="display:none">🚪</div>
+    </div>
+  </div>
+
+  <!-- ═══ LOGIN SCREEN ═══ -->
+  <div class="main">
+    <div class="screen active" id="screenLogin">
+      <div class="login-wrap">
+        <div class="login-card">
+          <div class="logo">📊</div>
+          <h2>CCBA Programme</h2>
+          <p>Sign in to access the dashboard</p>
+          <div class="field"><label>Email</label><input type="email" id="loginEmail" placeholder="you@becs.com"></div>
+          <div class="field"><label>Password</label><input type="password" id="loginPass" placeholder="••••••••"></div>
+          <div id="loginError" class="error-msg" style="display:none"></div>
+          <button class="btn btn-primary" onclick="login()" style="margin-top:8px">Sign In</button>
+          <p style="margin-top:14px;font-size:10px;color:var(--muted)">First time? <a href="#" onclick="signup();return false" style="color:var(--accent-mid)">Create account</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ DASHBOARD SCREEN ═══ -->
+    <div class="screen" id="screenDashboard"></div>
+
+    <!-- ═══ DATA ENTRY SCREEN ═══ -->
+    <div class="screen" id="screenEntry"></div>
+
+    <!-- ═══ UPLOAD SCREEN ═══ -->
+    <div class="screen" id="screenUpload">
+      <div class="entry-card" style="text-align:center">
+        <h3>Upload Delivery Tracker</h3>
+        <p style="font-size:11px;color:var(--muted);margin-bottom:14px">Parser searches by label — restructured sheets won't break it</p>
+        <div class="drop-zone" id="appDropZone" style="border:2px dashed rgba(76,175,80,0.3);border-radius:10px;padding:28px;cursor:pointer;position:relative;margin-bottom:12px">
+          <div style="font-size:28px;margin-bottom:6px">📁</div>
+          <div style="font-size:11px;color:var(--muted)"><strong style="color:#81C784">Drop .xlsx here</strong> or tap</div>
+          <input type="file" accept=".xlsx,.xls" onchange="handleAppTracker(event)" style="position:absolute;inset:0;opacity:0;cursor:pointer">
+        </div>
+        <div id="appUploadStatus" style="display:none;padding:10px;border-radius:8px;font-size:10px;margin-bottom:8px"></div>
+        <div id="appUploadLog" style="display:none;text-align:left;font-size:9px;max-height:200px;overflow-y:auto;background:rgba(0,0,0,0.2);border-radius:8px;padding:10px;font-family:monospace;line-height:1.7;margin-bottom:12px"></div>
+      </div>
+    </div>
+
+    <!-- ═══ HISTORY SCREEN ═══ -->
+    <div class="screen" id="screenHistory"></div>
+  </div>
+
+  <!-- ═══ BOTTOM NAV ═══ -->
+  <div class="bottom-nav" id="bottomNav" style="display:none">
+    <div class="nav-item active" onclick="showScreen('Dashboard')"><span class="nav-icon">📊</span>Dashboard</div>
+    <div class="nav-item" onclick="showScreen('Entry')"><span class="nav-icon">✏️</span>Entry</div>
+    <div class="nav-item" onclick="showScreen('Upload')"><span class="nav-icon">📁</span>Upload</div>
+    <div class="nav-item" onclick="showScreen('History')"><span class="nav-icon">📈</span>History</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════
+// CONFIG — Replace with your Supabase credentials
+// ══════════════════════════════════════
+const SUPABASE_URL = 'https://vwrftomlnksduzoeqomy.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3cmZ0b21sbmtzZHV6b2Vxb215Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNDQwODEsImV4cCI6MjA5MjcyMDA4MX0.9NLEJJxGh0eeY4EyCA2ArdEIdlAczY7rgcwhyAEf4cU';
+// ══════════════════════════════════════
+
+// Simple Supabase REST client (no SDK needed)
+const sb = {
+  headers: () => ({
+    'Content-Type':'application/json',
+    'apikey': SUPABASE_KEY,
+    'Authorization': `Bearer ${localStorage.getItem('sb_token') || SUPABASE_KEY}`
+  }),
+  async query(table, params='') {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${params}`, {headers: this.headers()});
+    return r.json();
+  },
+  async insert(table, data) {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {method:'POST', headers:{...this.headers(),'Prefer':'return=representation'}, body:JSON.stringify(data)});
+    return r.json();
+  },
+  async upsert(table, data) {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {method:'POST', headers:{...this.headers(),'Prefer':'return=representation,resolution=merge-duplicates'}, body:JSON.stringify(data)});
+    return r.json();
+  },
+  async auth(action, email, password) {
+    const r = await fetch(`${SUPABASE_URL}/auth/v1/${action}`, {method:'POST', headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY}, body:JSON.stringify({email, password})});
+    return r.json();
+  }
+};
+
+// ═══ STATE ═══
+let currentUser = null;
+let sites = [];
+let currentSiteIdx = 0;
+let formData = {};
+let reportDate = new Date().toISOString().split('T')[0];
+
+const siteColors = [
+  {color:'#B71C1C',mid:'#E57373',bg:'rgba(183,28,28,0.08)'},
+  {color:'#BF360C',mid:'#FF8A65',bg:'rgba(191,54,12,0.08)'},
+  {color:'#E65100',mid:'#FFB74D',bg:'rgba(230,81,0,0.08)'},
+  {color:'#F57F17',mid:'#FFD54F',bg:'rgba(245,127,23,0.08)'},
+  {color:'#827717',mid:'#DCE775',bg:'rgba(130,119,23,0.08)'}
+];
+
+const phaseOpts = ['Pre-feasibility','Feasibility','Design','Pre-construction','Mobilisation','Installation','Construction','Commissioning','Energisation','COD Achieved','Defects / O&M'];
+const wbsKeys = ['wbs_site_prep','wbs_ra_designs','wbs_roof','wbs_ground','wbs_commissioning'];
+const wbsLabels = ['Site Prep','RA + Designs','Roof Install','Ground Install','Commissioning'];
+const wbsWeights = ['5%','5%','50%','30%','10%'];
+
+// ═══ AUTH ═══
+async function login() {
+  const email = document.getElementById('loginEmail').value;
+  const pass = document.getElementById('loginPass').value;
+  const errEl = document.getElementById('loginError');
+  errEl.style.display = 'none';
+  if (!email || !pass) { errEl.textContent = 'Enter email and password'; errEl.style.display = 'block'; return; }
+  try {
+    // Try with configured Supabase, fall back to demo mode
+    if (SUPABASE_URL === 'YOUR_PROJECT_URL') {
+      currentUser = { email, id: 'demo' };
+      localStorage.setItem('sb_user', JSON.stringify(currentUser));
+      onLogin();
+      return;
+    }
+    const res = await sb.auth('token?grant_type=password', email, pass);
+    if (res.error) { errEl.textContent = res.error_description || res.msg || 'Invalid credentials'; errEl.style.display = 'block'; return; }
+    localStorage.setItem('sb_token', res.access_token);
+    currentUser = res.user;
+    localStorage.setItem('sb_user', JSON.stringify(currentUser));
+    onLogin();
+  } catch(e) {
+    // Offline or no Supabase — demo mode
+    currentUser = { email, id: 'demo' };
+    localStorage.setItem('sb_user', JSON.stringify(currentUser));
+    onLogin();
+  }
+}
+
+async function signup() {
+  const email = document.getElementById('loginEmail').value;
+  const pass = document.getElementById('loginPass').value;
+  const errEl = document.getElementById('loginError');
+  if (!email || !pass) { errEl.textContent = 'Enter email and password'; errEl.style.display = 'block'; return; }
+  if (SUPABASE_URL === 'YOUR_PROJECT_URL') { login(); return; }
+  try {
+    const res = await sb.auth('signup', email, pass);
+    if (res.error) { errEl.textContent = res.error_description || res.msg; errEl.style.display = 'block'; return; }
+    errEl.style.display = 'none';
+    toast('Account created — check email to confirm, then sign in', 'success');
+  } catch(e) { login(); }
+}
+
+function logout() {
+  localStorage.removeItem('sb_token');
+  localStorage.removeItem('sb_user');
+  currentUser = null;
+  document.getElementById('bottomNav').style.display = 'none';
+  document.getElementById('logoutBtn').style.display = 'none';
+  showScreen('Login');
+}
+
+async function onLogin() {
+  document.getElementById('bottomNav').style.display = 'flex';
+  document.getElementById('logoutBtn').style.display = 'flex';
+  await loadSites();
+  await loadLatestReports();
+  showScreen('Dashboard');
+}
+
+// ═══ DATA ═══
+const defaultSites = [
+  {id:'1',name:'keringet',display_name:'Keringet (Molo)',color:'#B71C1C',color_mid:'#E57373',baseline_cod:'2025-10-24',sort_order:1},
+  {id:'2',name:'nyeri',display_name:'Nyeri',color:'#BF360C',color_mid:'#FF8A65',baseline_cod:'2025-11-17',sort_order:2},
+  {id:'3',name:'umoja',display_name:'Umoja',color:'#E65100',color_mid:'#FFB74D',baseline_cod:'2026-01-09',sort_order:3},
+  {id:'4',name:'embakasi',display_name:'Embakasi',color:'#F57F17',color_mid:'#FFD54F',baseline_cod:'2026-07-09',sort_order:4},
+  {id:'5',name:'kisumu',display_name:'Kisumu',color:'#827717',color_mid:'#DCE775',baseline_cod:'2026-04-27',sort_order:5}
+];
+
+const defaultReports = {
+  '1':{overall_pct:99,wbs_site_prep:100,wbs_ra_designs:100,wbs_roof:99,wbs_ground:100,wbs_commissioning:95,phase:'Commissioning',rag:'green',rag_label:'On Track',planned_cod:'2026-05-31',from_baseline:'+5 months',key_issue:'EPRA license pending',risk_extreme:0,risk_high:0,risk_medium:1,risk_low:1,start_date:'2025-12-31',end_date:'2026-05-31'},
+  '2':{overall_pct:43,wbs_site_prep:100,wbs_ra_designs:100,wbs_roof:46,wbs_ground:33,wbs_commissioning:0,phase:'Construction',rag:'amber',rag_label:'At Risk',planned_cod:'2026-06-30',from_baseline:'+7 months',key_issue:'Interconnection drawing outstanding',risk_extreme:0,risk_high:1,risk_medium:1,risk_low:2,start_date:'2025-12-31',end_date:'2026-06-30'},
+  '3':{overall_pct:21,wbs_site_prep:100,wbs_ra_designs:90,wbs_roof:19,wbs_ground:8,wbs_commissioning:0,phase:'Installation',rag:'amber',rag_label:'At Risk',planned_cod:'2026-11-27',from_baseline:'+11 months',key_issue:'CCBA SLD pending; roof survey needed',risk_extreme:0,risk_high:1,risk_medium:2,risk_low:1,start_date:'2026-03-27',end_date:'2026-11-27'},
+  '4':{overall_pct:4,wbs_site_prep:60,wbs_ra_designs:25,wbs_roof:0,wbs_ground:0,wbs_commissioning:0,phase:'Pre-construction',rag:'red',rag_label:'Issue',planned_cod:'2027-04-30',from_baseline:'+10 months',key_issue:'Design pending; permits outstanding',risk_extreme:0,risk_high:1,risk_medium:2,risk_low:1,start_date:'2026-04-30',end_date:'2027-04-30'},
+  '5':{overall_pct:3,wbs_site_prep:60,wbs_ra_designs:0,wbs_roof:0,wbs_ground:0,wbs_commissioning:0,phase:'Pre-construction',rag:'red',rag_label:'Issue',planned_cod:'2027-05-30',from_baseline:'+13 months',key_issue:'EPRA visit pending; design not started',risk_extreme:0,risk_high:0,risk_medium:0,risk_low:0,start_date:'2026-04-30',end_date:'2027-05-30'}
+};
+
+let latestReports = {};
+let programmeNotes = {risks:[],decisions:[]};
+
+async function loadSites() {
+  try {
+    if (SUPABASE_URL !== 'YOUR_PROJECT_URL') {
+      sites = await sb.query('sites','order=sort_order');
+      if (Array.isArray(sites) && sites.length) return;
+    }
+  } catch(e) {}
+  sites = defaultSites;
+}
+
+async function loadLatestReports() {
+  try {
+    if (SUPABASE_URL !== 'YOUR_PROJECT_URL') {
+      const reps = await sb.query('latest_reports','order=sort_order');
+      if (Array.isArray(reps) && reps.length) {
+        reps.forEach(r => { latestReports[r.site_id] = r; });
+        return;
+      }
+    }
+  } catch(e) {}
+  sites.forEach(s => { latestReports[s.id] = {...defaultReports[s.id], site_id:s.id, report_date:reportDate}; });
+}
+
+async function loadHistory(siteId) {
+  try {
+    return await sb.query('report_deltas',`site_id=eq.${siteId}&order=report_date.desc&limit=12`);
+  } catch(e) {}
+  return [];
+}
+
+async function loadSiteReports(siteId) {
+  try {
+    return await sb.query('reports',`site_id=eq.${siteId}&order=report_date.asc&limit=24&select=report_date,overall_pct,rag`);
+  } catch(e) {}
+  return [];
+}
+
+async function loadAllSitesLatestDelta() {
+  try {
+    // Get latest delta per site
+    const all = [];
+    for (const s of sites) {
+      const d = await sb.query('report_deltas',`site_id=eq.${s.id}&order=report_date.desc&limit=1`);
+      if (Array.isArray(d) && d.length) all.push({...d[0], site: s});
+    }
+    return all;
+  } catch(e) {}
+  return [];
+}
+
+// Deviation detection
+const DEVIATION_THRESHOLD = 15; // percent
+function detectDeviations(siteId, formData) {
+  const prev = latestReports[siteId];
+  if (!prev) return [];
+  const deviations = [];
+  const fd = formData;
+
+  // Overall progress
+  const pctDelta = (fd.overall_pct||0) - (prev.overall_pct||0);
+  if (Math.abs(pctDelta) > DEVIATION_THRESHOLD) {
+    deviations.push({field:'Overall Progress', prev:prev.overall_pct+'%', current:fd.overall_pct+'%', delta:(pctDelta>0?'+':'')+pctDelta+'%', type:pctDelta<0?'regression':'jump'});
+  }
+
+  // Regression check (progress going backwards)
+  if (pctDelta < 0) {
+    deviations.push({field:'Progress Regression', prev:prev.overall_pct+'%', current:fd.overall_pct+'%', delta:pctDelta+'%', type:'regression'});
+  }
+
+  // WBS element big jumps
+  wbsKeys.forEach((k,i) => {
+    const wDelta = (fd[k]||0) - (prev[k]||0);
+    if (Math.abs(wDelta) > DEVIATION_THRESHOLD) {
+      deviations.push({field:wbsLabels[i], prev:(prev[k]||0)+'%', current:(fd[k]||0)+'%', delta:(wDelta>0?'+':'')+wDelta+'%', type:wDelta<0?'regression':'jump'});
+    }
+  });
+
+  // RAG change
+  if (prev.rag && fd.rag && prev.rag !== fd.rag) {
+    const ragOrder = {green:3,amber:2,red:1};
+    const direction = (ragOrder[fd.rag]||0) < (ragOrder[prev.rag]||0) ? 'downgrade' : 'upgrade';
+    deviations.push({field:'RAG Status', prev:prev.rag_label, current:fd.rag_label, delta:direction, type:direction});
+  }
+
+  return deviations;
+}
+
+async function saveReport(siteId, data) {
+  const {deviation_note, ...reportData} = data;
+  const record = {site_id: siteId, report_date: reportDate, ...reportData, created_by: currentUser?.id};
+  try {
+    if (SUPABASE_URL !== 'YOUR_PROJECT_URL') {
+      const res = await sb.upsert('reports', record);
+      if (res.error) throw new Error(res.message);
+    }
+  } catch(e) { console.log('Save offline, storing locally'); }
+  latestReports[siteId] = {...record};
+  // If there was a deviation note, update the latest delta
+  if (deviation_note) {
+    try {
+      const latestDelta = await sb.query('report_deltas',`site_id=eq.${siteId}&order=report_date.desc&limit=1`);
+      if (Array.isArray(latestDelta) && latestDelta.length) {
+        await fetch(`${SUPABASE_URL}/rest/v1/report_deltas?id=eq.${latestDelta[0].id}`, {
+          method:'PATCH', headers: sb.headers(), body: JSON.stringify({deviation_note})
+        });
+      }
+    } catch(e) {}
+  }
+  // Store locally as backup
+  const local = JSON.parse(localStorage.getItem('ccba_reports') || '{}');
+  local[siteId] = record;
+  localStorage.setItem('ccba_reports', JSON.stringify(local));
+}
+
+// ═══ NAVIGATION ═══
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen'+name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach((n,i) => {
+    n.classList.toggle('active', ['Dashboard','Entry','Upload','History'][i] === name);
+  });
+  if (name === 'Dashboard') renderDashboard();
+  if (name === 'Entry') renderEntry();
+  if (name === 'History') renderHistory();
+}
+
+// ═══ TOAST ═══
+function toast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast toast-${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ═══ THEME ═══
+function toggleTheme() {
+  const b = document.body;
+  b.dataset.theme = b.dataset.theme === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('ccba_theme', b.dataset.theme);
+}
+
+// ═══ RENDER: DASHBOARD ═══
+function renderDashboard() {
+  const el = document.getElementById('screenDashboard');
+  const risks = ['Contractor capacity across sites','Equipment delivery timelines TBC','Design-construction interface gaps','Limited central programme visibility'];
+  const decs = ['Confirm contractor allocation','Agree reporting structure','Clarify oversight responsibility','Complete Keringet commissioning','Finalise Embakasi & Kisumu design'];
+
+  let h = '<div class="dash-grid">';
+  sites.forEach((s, si) => {
+    const r = latestReports[s.id] || {};
+    const pct = r.overall_pct || 0;
+    const circ = 2*Math.PI*28;
+    const offset = circ*(1-pct/100);
+    const wbsDone = wbsKeys.filter(k => (r[k]||0) >= 100).length;
+    const col = siteColors[si] || siteColors[0];
+    const ragCls = r.rag === 'green' ? 'g' : r.rag === 'amber' ? 'a' : 'r';
+    const tH = Math.round(35); const aH = Math.round((pct/100)*35);
+
+    h += `<div class="dash-card">
+      <div class="dash-card-header" style="background:${s.color}"><h3>${s.display_name}</h3></div>
+      <div class="dash-card-body">
+        <div class="dash-donut"><div class="donut-container"><svg viewBox="0 0 70 70"><circle class="donut-bg" cx="35" cy="35" r="28"/><circle class="donut-fill" cx="35" cy="35" r="28" stroke="${s.color_mid}" stroke-dasharray="${circ}" stroke-dashoffset="${offset}"/></svg><div class="donut-text" style="font-size:14px">${pct}%</div></div></div>
+        <div style="text-align:center;font-size:9px;color:var(--muted);margin-bottom:6px">WBS: ${wbsDone}/5 complete</div>
+        <div class="dash-wbs">`;
+    wbsKeys.forEach((k,wi) => {
+      const v = r[k]||0; const c = v>=100?'var(--green)':v>0?s.color_mid:'var(--muted)';
+      h += `<div class="dash-wbs-row"><span class="w-label">${wbsLabels[wi]}</span><span class="w-val" style="color:${c}">${v>=100?'✓':v+'%'}</span></div>`;
+    });
+    h += `</div>
+        <div style="text-align:center"><span class="dash-rag ${ragCls}">${r.rag_label||'—'}</span></div>
+        <div class="dash-bars">
+          <div><div class="dash-bar-val" style="font-size:7px;text-align:center;color:${s.color_mid};opacity:0.5">100%</div><div class="dash-bar" style="height:${tH}px;width:22px;background:${s.color_mid};opacity:0.25;border-radius:3px 3px 0 0"></div><div class="dash-bar-lbl">Target</div></div>
+          <div><div class="dash-bar-val" style="font-size:7px;text-align:center;color:${s.color_mid}">${pct}%</div><div class="dash-bar" style="height:${aH}px;width:22px;background:${s.color_mid};border-radius:3px 3px 0 0"></div><div class="dash-bar-lbl">Actual</div></div>
+        </div>
+        <div class="dash-meta">
+          <div><strong>Phase:</strong> ${r.phase||'—'}</div>
+          <div><strong>COD:</strong> ${r.planned_cod||'—'} <span style="color:var(--red)">(${r.from_baseline||'—'})</span></div>
+          ${r.key_issue ? `<div style="margin-top:4px;font-style:italic">${r.key_issue}</div>` : ''}
+        </div>
+      </div></div>`;
+  });
+  h += '</div>';
+
+  h += '<div class="dash-bottom"><div class="dash-panel"><h3>Top Risks</h3>';
+  risks.forEach((r,i) => { h += `<div class="dash-panel-item"><div class="dash-panel-num" style="background:${siteColors[i]?.color||'#555'}">${i+1}</div><div>${r}</div></div>`; });
+  h += '</div><div class="dash-panel"><h3 style="border-color:var(--blue)">Decisions & Lookahead</h3>';
+  decs.forEach(d => { h += `<div class="dash-panel-item"><div class="dash-panel-num" style="background:var(--blue)">▸</div><div>${d}</div></div>`; });
+  h += '</div></div>';
+
+  el.innerHTML = h;
+}
+
+// ═══ RENDER: DATA ENTRY ═══
+function renderEntry() {
+  const el = document.getElementById('screenEntry');
+  const s = sites[currentSiteIdx];
+  if (!s) return;
+  const r = latestReports[s.id] || {};
+  const col = siteColors[currentSiteIdx] || siteColors[0];
+
+  // Init form data from latest report
+  if (!formData[s.id]) {
+    formData[s.id] = {
+      overall_pct: r.overall_pct||0,
+      wbs_site_prep: r.wbs_site_prep||0, wbs_ra_designs: r.wbs_ra_designs||0,
+      wbs_roof: r.wbs_roof||0, wbs_ground: r.wbs_ground||0, wbs_commissioning: r.wbs_commissioning||0,
+      phase: r.phase||'Pre-construction', rag: r.rag||'red', rag_label: r.rag_label||'Issue',
+      planned_cod: r.planned_cod||'', from_baseline: r.from_baseline||'',
+      key_issue: r.key_issue||'',
+      risk_extreme: r.risk_extreme||0, risk_high: r.risk_high||0,
+      risk_medium: r.risk_medium||0, risk_low: r.risk_low||0,
+      start_date: r.start_date||'', end_date: r.end_date||''
+    };
+  }
+  const fd = formData[s.id];
+
+  let h = '';
+  // Report date
+  h += `<div class="entry-card"><h3>Report Period</h3><div class="field"><label>Report Date</label><input type="date" value="${reportDate}" onchange="reportDate=this.value"></div></div>`;
+
+  // Site tabs
+  h += '<div class="site-tabs">';
+  sites.forEach((st,i) => {
+    h += `<div class="site-tab ${i===currentSiteIdx?'active':''}" style="${i===currentSiteIdx?'background:'+st.color+';color:#fff':''}" onclick="currentSiteIdx=${i};delete formData['${st.id}'];renderEntry()">${st.display_name}</div>`;
+  });
+  h += '</div>';
+
+  // Deviation detection
+  const deviations = detectDeviations(s.id, fd);
+  if (deviations.length > 0) {
+    h += `<div class="deviation-banner"><strong>⚠️ Unusual changes detected</strong>`;
+    deviations.forEach(d => {
+      h += `<div class="dev-detail">• <strong>${d.field}:</strong> ${d.prev} → ${d.current} (${d.delta})</div>`;
+    });
+    h += `<div class="deviation-note-field"><textarea placeholder="Add a note explaining these changes (saved with this report)..." onchange="formData['${s.id}'].deviation_note=this.value">${fd.deviation_note||''}</textarea></div></div>`;
+  }
+
+  // Progress
+  h += `<div class="entry-card"><h3>Overall Progress</h3>
+    <div class="slider-field"><div class="sf-header"><span class="sf-label">Progress</span><span class="sf-value" style="color:${s.color_mid}">${fd.overall_pct}%</span></div>
+    <input type="range" min="0" max="100" value="${fd.overall_pct}" style="accent-color:${s.color_mid}" oninput="formData['${s.id}'].overall_pct=parseInt(this.value);this.previousElementSibling.querySelector('.sf-value').textContent=this.value+'%'"></div></div>`;
+
+  // WBS
+  h += `<div class="entry-card"><h3>Work Breakdown</h3>`;
+  wbsKeys.forEach((k,i) => {
+    h += `<div class="slider-field"><div class="sf-header"><span class="sf-label">${wbsLabels[i]} (${wbsWeights[i]})</span><span class="sf-value" style="color:${fd[k]>=100?'var(--green)':s.color_mid}">${fd[k]}%</span></div>
+    <input type="range" min="0" max="100" value="${fd[k]}" style="accent-color:${s.color_mid}" oninput="formData['${s.id}'].${k}=parseInt(this.value);this.previousElementSibling.querySelector('.sf-value').textContent=this.value+'%'"></div>`;
+  });
+  h += '</div>';
+
+  // Phase
+  h += `<div class="entry-card"><h3>Status</h3>
+    <div class="field"><label>Phase</label><select onchange="formData['${s.id}'].phase=this.value">${phaseOpts.map(p=>`<option ${p===fd.phase?'selected':''}>${p}</option>`).join('')}</select></div>`;
+
+  // RAG
+  h += `<div style="margin-bottom:14px"><label style="display:block;font-size:10px;font-weight:600;color:var(--muted);margin-bottom:6px;letter-spacing:0.5px;text-transform:uppercase">RAG Status</label>
+    <div class="rag-selector">
+      <div class="rag-option rag-green ${fd.rag==='green'?'selected':''}" onclick="formData['${s.id}'].rag='green';formData['${s.id}'].rag_label='On Track';renderEntry()">● On Track</div>
+      <div class="rag-option rag-amber ${fd.rag==='amber'?'selected':''}" onclick="formData['${s.id}'].rag='amber';formData['${s.id}'].rag_label='At Risk';renderEntry()">● At Risk</div>
+      <div class="rag-option rag-red ${fd.rag==='red'?'selected':''}" onclick="formData['${s.id}'].rag='red';formData['${s.id}'].rag_label='Issue';renderEntry()">● Issue</div>
+    </div></div></div>`;
+
+  // Schedule
+  h += `<div class="entry-card"><h3>Schedule</h3>
+    <div class="field"><label>Planned COD</label><input type="date" value="${fd.planned_cod}" onchange="formData['${s.id}'].planned_cod=this.value"></div>
+    <div class="field"><label>From Baseline</label><input type="text" value="${fd.from_baseline}" placeholder="+5 months" onchange="formData['${s.id}'].from_baseline=this.value"></div></div>`;
+
+  // Risks
+  h += `<div class="entry-card"><h3>Risks & Issues</h3><div class="risk-grid">`;
+  const riskLevels = [{k:'risk_extreme',l:'Extreme',c:'var(--red)'},{k:'risk_high',l:'High',c:'var(--amber)'},{k:'risk_medium',l:'Medium',c:'#fbc02d'},{k:'risk_low',l:'Low',c:'var(--green)'}];
+  riskLevels.forEach(rl => {
+    h += `<div class="risk-item"><span class="ri-label" style="color:${rl.c}">${rl.l}</span><div class="stepper">
+      <button onclick="formData['${s.id}'].${rl.k}=Math.max(0,(formData['${s.id}'].${rl.k}||0)-1);renderEntry()">−</button>
+      <span class="stepper-val">${fd[rl.k]||0}</span>
+      <button onclick="formData['${s.id}'].${rl.k}=(formData['${s.id}'].${rl.k}||0)+1;renderEntry()">+</button>
+    </div></div>`;
+  });
+  h += '</div></div>';
+
+  // Key Issue
+  h += `<div class="entry-card"><h3>Key Issue / Constraint</h3>
+    <div class="field"><textarea placeholder="Single biggest blocker or constraint..." onchange="formData['${s.id}'].key_issue=this.value">${fd.key_issue}</textarea></div></div>`;
+
+  // Submit bar
+  h += `<div class="submit-bar">
+    <button class="btn btn-secondary" style="flex:1" onclick="delete formData['${s.id}'];renderEntry()">Reset</button>
+    <button class="btn btn-success" style="flex:2" onclick="submitEntry('${s.id}')">Save ${s.display_name}</button>
+  </div>`;
+
+  el.innerHTML = h;
+}
+
+async function submitEntry(siteId) {
+  const fd = formData[siteId];
+  if (!fd) return;
+  // Check for deviations and warn if no note
+  const devs = detectDeviations(siteId, fd);
+  if (devs.length > 0 && !fd.deviation_note) {
+    if (!confirm('Unusual changes detected without a note. Save anyway?')) return;
+  }
+  await saveReport(siteId, fd);
+  toast(`${sites.find(s=>s.id===siteId)?.display_name} saved`);
+  delete formData[siteId];
+  // Auto-advance to next site
+  if (currentSiteIdx < sites.length - 1) {
+    currentSiteIdx++;
+    renderEntry();
+  } else {
+    showScreen('Dashboard');
+  }
+}
+
+let historyView = 'overview'; // overview | site
+
+// ═══ RENDER: HISTORY ═══
+async function renderHistory() {
+  const el = document.getElementById('screenHistory');
+  let h = '';
+
+  // View toggle
+  h += `<div class="history-tabs">
+    <div class="history-tab ${historyView==='overview'?'active':''}" onclick="historyView='overview';renderHistory()">All Sites</div>
+    <div class="history-tab ${historyView==='site'?'active':''}" onclick="historyView='site';renderHistory()">Site Detail</div>
+  </div>`;
+
+  if (historyView === 'overview') {
+    h += await renderHistoryOverview();
+  } else {
+    h += await renderHistorySite();
+  }
+
+  el.innerHTML = h;
+}
+
+async function renderHistoryOverview() {
+  let h = '<div class="history-card"><h3>Programme Progress</h3>';
+
+  // Sparklines for all sites
+  for (let si = 0; si < sites.length; si++) {
+    const s = sites[si];
+    const reports = await loadSiteReports(s.id);
+    const r = latestReports[s.id] || {};
+    const pct = r.overall_pct || 0;
+    const col = s.color_mid;
+
+    // Build sparkline SVG
+    let sparkSvg = '';
+    if (reports.length >= 2) {
+      const pts = reports.map((rp, i) => {
+        const x = (i / (reports.length - 1)) * 200;
+        const y = 36 - (rp.overall_pct / 100) * 32;
+        return `${x},${y}`;
+      });
+      sparkSvg = `<svg class="spark-svg" viewBox="0 0 200 40" preserveAspectRatio="none">
+        <polyline points="${pts.join(' ')}" fill="none" stroke="${col}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        ${reports.map((rp, i) => {
+          const x = (i / (reports.length - 1)) * 200;
+          const y = 36 - (rp.overall_pct / 100) * 32;
+          return i === reports.length-1 ? `<circle cx="${x}" cy="${y}" r="3" fill="${col}"/>` : '';
+        }).join('')}
+      </svg>`;
+    } else {
+      sparkSvg = `<svg class="spark-svg" viewBox="0 0 200 40"><text x="100" y="24" text-anchor="middle" fill="${'var(--muted)'}" font-size="10">Awaiting data</text></svg>`;
+    }
+
+    // Last delta
+    const deltas = await loadHistory(s.id);
+    const lastDelta = deltas.length ? deltas[0].overall_delta : null;
+    const deltaSign = lastDelta > 0 ? '+' : '';
+    const deltaCls = lastDelta > 0 ? 'delta-pos' : lastDelta < 0 ? 'delta-neg' : 'delta-zero';
+
+    h += `<div class="spark-row" onclick="currentSiteIdx=${si};historyView='site';renderHistory()" style="cursor:pointer">
+      <div class="spark-info">
+        <div class="spark-name" style="color:${col}">${s.display_name.split(' (')[0]}</div>
+        <div class="spark-pct" style="color:${col}">${pct}%</div>
+      </div>
+      ${sparkSvg}
+      <div class="spark-delta ${deltaCls}">${lastDelta !== null ? deltaSign + lastDelta + '%' : '—'}</div>
+    </div>`;
+  }
+
+  h += '</div>';
+
+  // Latest deltas summary
+  const allDeltas = await loadAllSitesLatestDelta();
+  if (allDeltas.length) {
+    h += '<div class="history-card"><h3>Latest Period Changes</h3><table class="delta-table"><thead><tr><th>Site</th><th>Progress</th><th>Δ</th><th>RAG</th><th>COD</th></tr></thead><tbody>';
+    allDeltas.forEach(d => {
+      const deltaCls = d.overall_delta > 0 ? 'pos' : d.overall_delta < 0 ? 'neg' : 'zero';
+      const deltaSign = d.overall_delta > 0 ? '+' : '';
+      const ragChip = d.rag_changed ? `<span class="delta-chip rag-change">${d.rag_prev}→${d.rag_current}</span>` : `<span style="font-size:9px;color:var(--muted)">—</span>`;
+      const codChip = d.cod_shifted_days !== 0 ? `<span class="delta-chip cod-shift">${d.cod_shifted_days>0?'+':''}${d.cod_shifted_days}d</span>` : `<span style="font-size:9px;color:var(--muted)">—</span>`;
+      h += `<tr>
+        <td style="font-weight:600;color:${d.site.color_mid}">${d.site.display_name.split(' (')[0]}</td>
+        <td>${d.overall_pct_current}%</td>
+        <td><span class="delta-chip ${deltaCls}">${deltaSign}${d.overall_delta}%</span></td>
+        <td>${ragChip}</td>
+        <td>${codChip}</td>
+      </tr>`;
+    });
+    h += '</tbody></table></div>';
+  }
+
+  return h;
+}
+
+async function renderHistorySite() {
+  let h = '<div class="site-tabs">';
+  sites.forEach((s,i) => { h += `<div class="site-tab ${i===currentSiteIdx?'active':''}" style="${i===currentSiteIdx?'background:'+s.color+';color:#fff':''}" onclick="currentSiteIdx=${i};renderHistory()">${s.display_name}</div>`; });
+  h += '</div>';
+
+  const s = sites[currentSiteIdx];
+  const col = s.color_mid;
+
+  // Sparkline
+  const reports = await loadSiteReports(s.id);
+  if (reports.length >= 2) {
+    h += `<div class="history-card"><h3>Progress Trajectory</h3>`;
+    const w = 280, ht = 80;
+    const pts = reports.map((rp, i) => {
+      const x = 20 + (i / (reports.length - 1)) * (w - 40);
+      const y = ht - 10 - (rp.overall_pct / 100) * (ht - 24);
+      return {x, y, pct: rp.overall_pct, date: rp.report_date};
+    });
+
+    h += `<svg viewBox="0 0 ${w} ${ht}" style="width:100%;height:${ht}px">
+      <line x1="20" y1="${ht-10}" x2="${w-20}" y2="${ht-10}" stroke="var(--border)" stroke-width="1"/>
+      <polyline points="${pts.map(p=>p.x+','+p.y).join(' ')}" fill="none" stroke="${col}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      ${pts.map((p,i) => `<circle cx="${p.x}" cy="${p.y}" r="${i===pts.length-1?4:2.5}" fill="${col}"/>
+        <text x="${p.x}" y="${p.y - 8}" text-anchor="middle" fill="${col}" font-size="8" font-weight="700">${p.pct}%</text>
+        ${i % Math.max(1,Math.floor(pts.length/6)) === 0 || i === pts.length-1 ? `<text x="${p.x}" y="${ht-1}" text-anchor="middle" fill="var(--muted)" font-size="7">${p.date.slice(5)}</text>` : ''}`).join('')}
+    </svg></div>`;
+  }
+
+  // Period comparison bars
+  if (reports.length >= 2) {
+    const prev = reports[reports.length - 2];
+    const curr = reports[reports.length - 1];
+    h += `<div class="history-card"><h3>Period Comparison</h3>
+      <div style="font-size:9px;color:var(--muted);margin-bottom:8px">${prev.report_date} → ${curr.report_date}</div>`;
+
+    const prevR = await loadSiteReport(s.id, prev.report_date);
+    const currR = await loadSiteReport(s.id, curr.report_date);
+    if (prevR && currR) {
+      // Overall bar comparison
+      h += `<div class="compare-bar"><span class="compare-label">Overall</span>
+        <div class="compare-track"><div class="compare-fill prev" style="width:${prevR.overall_pct}%;background:${col}"></div><div class="compare-fill" style="width:${currR.overall_pct}%;background:${col}"></div></div>
+        <span class="compare-val" style="color:${col}">${currR.overall_pct}%</span></div>`;
+
+      // WBS delta grid
+      h += '<div class="wbs-delta-grid">';
+      wbsKeys.forEach((k,i) => {
+        const pv = prevR[k]||0, cv = currR[k]||0, d = cv - pv;
+        const dc = d > 0 ? 'var(--green)' : d < 0 ? 'var(--red)' : 'var(--muted)';
+        h += `<div class="wbs-delta-item"><div class="wd-label">${wbsLabels[i].split(' ')[0]}</div><div class="wd-val" style="color:${dc}">${d>0?'+':''}${d}%</div></div>`;
+      });
+      h += '</div>';
+    }
+    h += '</div>';
+  }
+
+  // Full delta history table
+  const deltas = await loadHistory(s.id);
+  if (deltas.length) {
+    h += `<div class="history-card"><h3>Change Log</h3><table class="delta-table"><thead><tr><th>Date</th><th>Progress</th><th>Δ Overall</th><th>RAG</th><th>Note</th></tr></thead><tbody>`;
+    deltas.forEach(d => {
+      const cls = d.overall_delta > 0 ? 'pos' : d.overall_delta < 0 ? 'neg' : 'zero';
+      const sign = d.overall_delta > 0 ? '+' : '';
+      const ragChip = d.rag_changed ? `<span class="delta-chip rag-change">${(d.rag_prev||'')[0]}→${(d.rag_current||'')[0]}</span>` : '—';
+      h += `<tr>
+        <td style="white-space:nowrap">${d.report_date}</td>
+        <td>${d.overall_pct_current}%</td>
+        <td><span class="delta-chip ${cls}">${sign}${d.overall_delta}%</span></td>
+        <td>${ragChip}</td>
+        <td style="font-size:9px;color:var(--muted);max-width:100px;overflow:hidden;text-overflow:ellipsis">${d.deviation_note||'—'}</td>
+      </tr>`;
+    });
+    h += '</tbody></table></div>';
+  } else {
+    h += '<div class="history-card"><h3>No change data yet</h3><p style="font-size:11px;color:var(--muted)">Submit at least two reports for this site to see period-over-period changes.</p></div>';
+  }
+
+  return h;
+}
+
+async function loadSiteReport(siteId, reportDate) {
+  try {
+    const res = await sb.query('reports',`site_id=eq.${siteId}&report_date=eq.${reportDate}&limit=1`);
+    return Array.isArray(res) && res.length ? res[0] : null;
+  } catch(e) {}
+  return null;
+}
+
+// ═══ TRACKER UPLOAD ═══
+function handleAppTracker(event) {
+  const file = event.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(e.target.result, {type:'array',cellDates:true});
+      const result = parseAppTracker(wb);
+      const logEl = document.getElementById('appUploadLog');
+      logEl.innerHTML = result.log.map(l=>`<div style="color:${l.cls==='log-ok'?'#81C784':l.cls==='log-warn'?'#FFB74D':l.cls==='log-err'?'#EF5350':'#82B1FF'}">${l.msg}</div>`).join('');
+      logEl.style.display = 'block';
+      const st = document.getElementById('appUploadStatus');
+      if (result.success) {
+        st.textContent = '✓ Data extracted — go to Entry to review and save';
+        st.style.cssText = 'display:block;background:rgba(76,175,80,0.1);border:1px solid rgba(76,175,80,0.3);color:#81C784';
+      } else {
+        st.textContent = '✗ Parse failed';
+        st.style.cssText = 'display:block;background:rgba(244,67,54,0.1);border:1px solid rgba(244,67,54,0.3);color:#EF5350';
+      }
+    } catch(err) {
+      document.getElementById('appUploadStatus').textContent = '✗ ' + err.message;
+      document.getElementById('appUploadStatus').style.cssText = 'display:block;background:rgba(244,67,54,0.1);color:#EF5350';
+    }
+  };
+  reader.readAsArrayBuffer(file);
+  event.target.value = '';
+}
+
+function parseAppTracker(wb) {
+  // Same label-matching parser as the HTML dashboard
+  const log=[];const L=(m,c='log-ok')=>log.push({msg:m,cls:c});
+  function g2a(sh){const rng=XLSX.utils.decode_range(sh['!ref']||'A1');const g=[];for(let r=rng.s.r;r<=rng.e.r;r++){const rw=[];for(let c=rng.s.c;c<=rng.e.c;c++)rw.push(sh[XLSX.utils.encode_cell({r,c})]||null);g.push(rw)}return g}
+  function ct(c){return c&&c.v!=null?String(c.v).trim().toLowerCase().replace(/\s+/g,' '):''}
+  function m(a,b){const x=a.toLowerCase().replace(/\s+/g,' ').trim(),y=b.toLowerCase().trim();return x.includes(y)||y.includes(x)}
+  function fR(g,ci,t){for(let r=0;r<g.length;r++)if(g[r][ci]&&m(ct(g[r][ci]),t))return r;return-1}
+  function fC(g,ri,t){if(ri<0||ri>=g.length)return-1;for(let c=0;c<g[ri].length;c++)if(g[ri][c]&&m(ct(g[ri][c]),t))return c;return-1}
+  function fL(g,t){for(let r=0;r<g.length;r++)for(let c=0;c<g[r].length;c++)if(g[r][c]&&m(ct(g[r][c]),t))return{r,c};return null}
+
+  const siteNames=['Keringet','Nyeri','Umoja','Embakasi','Kisumu'];
+  const wbs=[{l:'Site prep',k:'wbs_site_prep'},{l:'RA + construction designs',k:'wbs_ra_designs'},{l:'Roof level installation',k:'wbs_roof'},{l:'Ground level installation',k:'wbs_ground'},{l:'Commissioning',k:'wbs_commissioning'}];
+
+  const ps=wb.Sheets['Progress - summary'];
+  if(!ps){L('ERROR: "Progress - summary" not found','log-err');return{success:false,log}}
+  L('✓ Found: Progress - summary');const pg=g2a(ps);
+
+  let hr=-1;for(let r=0;r<Math.min(pg.length,10);r++)if(fC(pg,r,'keringet')>=0){hr=r;break}
+  if(hr<0){L('ERROR: Header row not found','log-err');return{success:false,log}}
+
+  const scm={},srm={};siteNames.forEach(s=>{const c=fC(pg,hr,s);if(c>=0){scm[s]=c;srm[s]=c+1}});
+  const wrm={};const sp=fL(pg,'site prep');const lc=sp?sp.c:1;
+  wbs.forEach(w=>{const r=fR(pg,lc,w.l);if(r>=0)wrm[w.l]=r});
+  let wc=fC(pg,hr,'weighting');let tr=-1;const lw=Math.max(...Object.values(wrm));
+  for(let r=lw+1;r<Math.min(lw+4,pg.length);r++){if(pg[r]&&wc>=0&&pg[r][wc]){const v=parseFloat(pg[r][wc]?.v);if(!isNaN(v)&&v>0.95&&v<=1.01){tr=r;break}}}
+
+  siteNames.forEach((sn,si)=>{
+    L(`── ${sn} ──`,'log-site');const s=sites[si];if(!s)return;
+    const wC=scm[sn],rC=srm[sn];if(wC===undefined)return;
+    if(!formData[s.id])formData[s.id]={...latestReports[s.id]||{}};
+    const fd=formData[s.id];
+
+    wbs.forEach(w=>{const wr=wrm[w.l];if(wr===undefined)return;
+      const c=pg[wr]?.[rC];if(c&&c.v!=null){const v=parseFloat(c.v);const p=v>1.5?Math.round(v):Math.round(v*100);fd[w.k]=Math.min(100,Math.max(0,p));L(`  ${w.l}: ${fd[w.k]}%`)}});
+
+    if(tr>=0&&pg[tr]?.[wC]){const v=parseFloat(pg[tr][wC].v);const p=v>1.5?Math.round(v):Math.round(v*100);fd.overall_pct=p;L(`  Overall: ${p}%`)}
+    if(fd.overall_pct>=90){fd.rag='green';fd.rag_label='On Track'}else if(fd.overall_pct>=30){fd.rag='amber';fd.rag_label='At Risk'}else{fd.rag='red';fd.rag_label='Issue'}
+  });
+
+  L('');L('✓ Data extracted — review in Entry tab','log-ok');
+  return{success:true,log};
+}
+
+function exportPDF(){window.print()}
+
+// ═══ INIT ═══
+const savedTheme = localStorage.getItem('ccba_theme');
+if (savedTheme) document.body.dataset.theme = savedTheme;
+
+const savedUser = localStorage.getItem('sb_user');
+if (savedUser) { currentUser = JSON.parse(savedUser); onLogin(); }
+
+// Offline detection
+window.addEventListener('online', () => document.getElementById('offlineBanner').classList.remove('show'));
+window.addEventListener('offline', () => document.getElementById('offlineBanner').classList.add('show'));
+</script>
+</body>
+</html>
